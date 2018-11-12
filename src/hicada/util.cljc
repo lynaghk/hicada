@@ -1,7 +1,7 @@
 (ns hicada.util
   (:require
     [clojure.string :as str]
-    [clojure.set :as set]))
+    [clojure.set :refer [rename-keys]]))
 
 (defn join-classes-js
   "Joins strings space separated"
@@ -72,3 +72,13 @@
       "select" (when (:value attrs) '(hiccada.input/wrapped-select))
       "textarea" (when (:value attrs) '(hiccada.input/wrapped-textarea))
       nil)))
+
+
+
+
+(defn html-to-dom-attrs
+  "Converts all HTML attributes to their DOM equivalents."
+  [attrs]
+  (rename-keys (camel-case-keys attrs)
+               {:class :className
+                :for :htmlFor}))
