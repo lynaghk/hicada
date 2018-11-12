@@ -136,7 +136,7 @@
   "Render an element vector as a HTML element."
   [element]
   (let [[type attrs content] (normalize/element element)]
-    (apply create-element type
+    (apply create-element (name type) ;;hicada uses keyword tags, unlike sablono
            (attributes attrs)
            (interpret-seq content))))
 
