@@ -224,18 +224,17 @@
 (defmacro interpret-when-necessary
   "Macro that wraps `expr` with interpreter call, if it cannot be inlined based on inferred type."
   [expr]
-  (binding [*out* *err*]
-    (let [tag (infer-type expr &env)]
-      (if (contains? (:inlineable-types *config*) tag)
-        expr
-        (do
-          (when (:warn-on-interpretation? *config*)
-            (println "WARNING: interpreting by default, please specify ^:inline or ^:interpret" (when-let [line (:line (meta expr))]
-                                                                                                  (str "line " line)))
-            (println "Inferred tag was:" tag)
-            (prn expr)
-            (println ""))
-          `(hicada.interpreter/interpret ~expr))))))
+  (let [tag (infer-type expr &env)]
+    (if (contains? (:inlineable-types *config*) tag)
+      expr
+      (binding [*out* *err*]
+        (when (:warn-on-interpretation? *config*)
+          (println "WARNING: interpreting by default, please specify ^:inline or ^:interpret" (when-let [line (:line (meta expr))]
+                                                                                                (str "line " line)))
+          (println "Inferred tag was:" tag)
+          (prn expr)
+          (println ""))
+        `(hicada.interpreter/interpret ~expr)))))
 
 
 (defmethod compile-form :default
