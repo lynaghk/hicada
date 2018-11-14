@@ -32,6 +32,7 @@
                      :emit-fn nil
                      :rewrite-for? false
                      :server-render? false
+                     :warn-on-interpretation? true
                      ;; If you also want to camelcase string map keys, add string? here:
                      :camelcase-key-pred (some-fn keyword? symbol?)
                      ;; A fn that will get [tag attr children] and return
@@ -228,10 +229,11 @@
       (if (contains? (:inlineable-types *config*) tag)
         expr
         (do
-          (println "WARNING: interpreting form by default; Specify ^:inline or ^:interpret" (when-let [line (:line (meta expr))]
-                                                                                              (str "line " line)))
-          (println "Inferred tag was:" tag)
-          (prn expr)
+          (when (:warn-on-interpretation? *config*)
+            (println "WARNING: interpreting form by default; Specify ^:inline or ^:interpret" (when-let [line (:line (meta expr))]
+                                                                                                (str "line " line)))
+            (println "Inferred tag was:" tag)
+            (prn expr))
           `(hicada.interpreter/interpret ~expr))))))
 
 
@@ -438,6 +440,7 @@
   "Arguments:
   - content: The hiccup to compile
   - opts
+   o :warn-on-interpretation? - Print warnings when code cannot be pre-compiled and must be interpreted at runtime? (Defaults to `true`)
    o :inlineable-types - CLJS type tags that are safe to inline without interpretation. Defaults to `#{'number 'string}`
    o :array-children? - for product build of React only or you'll enojoy a lot of warnings :)
    o :create-element 'js/React.createElement - you can also use your own function here.
