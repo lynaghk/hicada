@@ -14,8 +14,9 @@
   the ^:dynamic config anymore!"
   (:refer-clojure :exclude [compile])
   (:require
-    [hicada.normalize :as norm]
-    [hicada.util :as util]))
+   cljs.analyzer
+   [hicada.normalize :as norm]
+   [hicada.util :as util]))
 
 (def default-handlers {:> (fn [_ klass attrs & children]
                             [klass attrs children])
@@ -37,6 +38,7 @@
                      ;; [tag attr children] just before emitting.
                      :transform-fn identity
                      :create-element 'js/React.createElement
+                     :inlineable-types #{'number 'string}
                      :child-config (fn [options form expanded] options)})
 
 (def ^:dynamic *config* default-config)
@@ -175,7 +177,6 @@
   `(when-some ~bindings ~@(butlast body) ~(emitter (last body))))
 
 (defmethod compile-form "when-not"
-
   [[_ bindings & body]]
   `(when-not ~bindings ~@(doall (for [x body] (emitter x)))))
 
@@ -214,7 +215,39 @@
              (partition 2 clauses))))
 
 
-(defmethod compile-form :default [expr] expr)
+(defn infer-type
+  [expr env]
+  (cljs.analyzer/infer-tag env (cljs.analyzer/no-warn (cljs.analyzer/analyze env expr))))
+
+
+(defmacro interpret-when-necessary
+  "Macro that wraps `expr` with interpreter call, if it cannot be inlined based on inferred type."
+  [expr]
+  (binding [*out* *err*]
+    (let [tag (infer-type expr &env)]
+      (if (contains? (:inlineable-types *config*) tag)
+        expr
+        (do
+          (println "WARNING: interpreting form by default; Specify ^:inline or ^:interpret" (when-let [line (:line (meta expr))]
+                                                                                              (str "line " line)))
+          (println "Inferred tag was:" tag)
+          (prn expr)
+          `(hicada.interpreter/interpret ~expr))))))
+
+
+(defmethod compile-form :default
+  [expr]
+  (let [{:keys [interpret inline]} (meta expr)]
+    (cond
+      inline
+      expr
+
+      interpret
+      `(hicada.interpreter/interpret ~expr)
+
+      :else
+      `(interpret-when-necessary ~expr))))
+
 
 (defn- literal?
   "True if x is a literal value that can be rendered as-is."
@@ -405,6 +438,7 @@
   "Arguments:
   - content: The hiccup to compile
   - opts
+   o :inlineable-types - CLJS type tags that are safe to inline without interpretation. Defaults to `#{'number 'string}`
    o :array-children? - for product build of React only or you'll enojoy a lot of warnings :)
    o :create-element 'js/React.createElement - you can also use your own function here.
    o :wrap-input? - if inputs should be wrapped. Try without!
