@@ -25,6 +25,7 @@
                               ['js/React.Fragment attrs children]
                               ['js/React.Fragment {} (cons attrs children)]))})
 
+
 ;; TODO: We should take &env around everything and also expect it as an argument.
 (def default-config {:inline? false
                      :wrap-input? false
@@ -239,12 +240,15 @@
 
 (defmethod compile-form :default
   [expr]
-  (let [{:keys [interpret inline]} (meta expr)]
+
+  (let [interpret-or-inline ((:interpret-or-inline-fn *config* (constantly nil)) expr)]
     (cond
-      inline
+      (or (= interpret-or-inline :inline)
+          (-> expr meta :inline))
       expr
 
-      interpret
+      (or (= interpret-or-inline :interpret)
+          (-> expr meta :interpret))
       `(hicada.interpreter/interpret ~expr)
 
       :else
@@ -442,6 +446,7 @@
   - opts
    o :warn-on-interpretation? - Print warnings when code cannot be pre-compiled and must be interpreted at runtime? (Defaults to `true`)
    o :inlineable-types - CLJS type tags that are safe to inline without interpretation. Defaults to `#{'number 'string}`
+   o :interpret-or-inline-fn - optional; fn of expr that returns `:inline` or `:interpret` to force one of those options.
    o :array-children? - for product build of React only or you'll enojoy a lot of warnings :)
    o :create-element 'js/React.createElement - you can also use your own function here.
    o :wrap-input? - if inputs should be wrapped. Try without!
