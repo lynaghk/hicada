@@ -143,6 +143,10 @@
   [[_ bindings & body]]
   `(letfn* ~bindings ~@(butlast body) ~(emitter (last body))))
 
+(defmethod hicada.compiler/compile-form "list"
+  [[_ & forms]]
+  `(cljs.core/array ~@(mapv emitter forms)))
+
 (defmethod compile-form "for"
   [[_ bindings body]]
   ;; Special optimization: For a simple (for [x xs] ...) we rewrite the for
