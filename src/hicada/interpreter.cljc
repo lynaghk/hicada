@@ -155,6 +155,11 @@
   (interpret [this]
     (interpret-seq this))
 
+  ;;TODO: this type extension seems brittle.
+  #?@(:cljs [cljs.core.Repeat
+             (interpret [this]
+                        (interpret-seq this))])
+
   #?(:clj clojure.lang.PersistentVector$ChunkedSeq
      :cljs cljs.core.ChunkedSeq)
   (interpret [this]
