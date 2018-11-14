@@ -230,10 +230,11 @@
         expr
         (do
           (when (:warn-on-interpretation? *config*)
-            (println "WARNING: interpreting form by default; Specify ^:inline or ^:interpret" (when-let [line (:line (meta expr))]
-                                                                                                (str "line " line)))
+            (println "WARNING: interpreting by default, please specify ^:inline or ^:interpret" (when-let [line (:line (meta expr))]
+                                                                                                  (str "line " line)))
             (println "Inferred tag was:" tag)
-            (prn expr))
+            (prn expr)
+            (println ""))
           `(hicada.interpreter/interpret ~expr))))))
 
 
