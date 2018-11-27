@@ -79,10 +79,14 @@
         :else value))
 
 (defmethod compile-config-kv :style [name value]
-  (util/camel-case-keys value))
+  (if (list? value)
+    (list 'clj->js value)
+    (util/camel-case-keys value)))
 
 (defmethod compile-config-kv :default [name value]
-  value)
+  (if (list? value)
+    (list 'clj->js value)
+    value))
 
 (defn compile-config
   "Compile a HTML attribute map to react (class -> className), camelCases :style."
