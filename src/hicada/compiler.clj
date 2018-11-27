@@ -166,25 +166,33 @@
       (list 'cljs.core/into-array `(for ~bindings ~(emitter body))))
     `(for ~bindings ~(emitter body))))
 
-(defmethod compile-form "if"
-  [[_ condition & body]]
-  `(if ~condition ~@(doall (for [x body] (emitter x)))))
-
 (defmethod compile-form "when"
+  [[_ condition & body]]
+  `(when ~condition ~@(butlast body) ~(emitter (last body))))
+
+(defmethod compile-form "when-let"
   [[_ bindings & body]]
-  `(when ~bindings ~@(doall (for [x body] (emitter x)))))
+  `(when-let ~bindings ~@(butlast body) ~(emitter (last body))))
 
 (defmethod compile-form "when-some"
   [[_ bindings & body]]
   `(when-some ~bindings ~@(butlast body) ~(emitter (last body))))
 
 (defmethod compile-form "when-not"
+  [[_ condition & body]]
+  `(when-not ~condition ~@(butlast body) ~(emitter (last body))))
+
+(defmethod compile-form "if"
+  [[_ condition & body]]
+  `(if ~condition ~@(doall (for [x body] (emitter x)))))
+
+(defmethod compile-form "if-let"
   [[_ bindings & body]]
-  `(when-not ~bindings ~@(doall (for [x body] (emitter x)))))
+  `(if-let ~bindings ~@(doall (for [x body] (emitter x)))))
 
 (defmethod compile-form "if-not"
-  [[_ bindings & body]]
-  `(if-not ~bindings ~@(doall (for [x body] (emitter x)))))
+  [[_ condition & body]]
+  `(if-not ~condition ~@(doall (for [x body] (emitter x)))))
 
 (defmethod compile-form "if-some"
   [[_ bindings & body]]
@@ -551,5 +559,11 @@
 
   (compile '[:Text {:style [{:border-bottom "2px"}]}])
 
-  (compile '[:div a b] {:array-children? false}))
+  (compile '[:div a b] {:array-children? false})
+
+  (compile '[:div {:style (assoc {} :width 10)}])
+  (compile '[:div {:data-style (assoc {} :width 10)}])
+  (compile '[:div (assoc {} :style {:width 10})])
+
+)
 
