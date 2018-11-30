@@ -147,6 +147,10 @@
   [[_ bindings & body]]
   `(let* ~bindings ~@(butlast body) ~(emitter (last body))))
 
+(defmethod compile-form "letfn"
+  [[_ bindings & body]]
+  `(letfn ~bindings ~@(butlast body) ~(emitter (last body))))
+
 (defmethod compile-form "letfn*"
   [[_ bindings & body]]
   `(letfn* ~bindings ~@(butlast body) ~(emitter (last body))))
