@@ -66,11 +66,11 @@
   (when (keyword? type)
     (case (name type)
       "input" (cond
-                (:checked attrs) '(hiccada.input/wrapped-checked)
-                (:value attrs) '(hiccada.input/wrapped-input)
+                (:checked attrs) '(hicada.input/wrapped-checked)
+                (:value attrs) '(hicada.input/wrapped-input)
                 :else nil)
-      "select" (when (:value attrs) '(hiccada.input/wrapped-select))
-      "textarea" (when (:value attrs) '(hiccada.input/wrapped-textarea))
+      "select" (when (:value attrs) '(hicada.input/wrapped-select))
+      "textarea" (when (:value attrs) '(hicada.input/wrapped-textarea))
       nil)))
 
 

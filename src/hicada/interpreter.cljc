@@ -3,6 +3,7 @@
             [clojure.string :as str]
             [clojure.string :refer [blank? join]]
             [hicada.normalize :as normalize]
+            hicada.input
             [hicada.util :as util]))
 
 (defprotocol IInterpreter
